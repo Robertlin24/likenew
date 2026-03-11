@@ -1,0 +1,27 @@
+{
+    "title": "schedules",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "day_of_week": {
+            "type": "integer",
+            "description": "Day of week 0=Monday to 6=Sunday"
+        },
+        "time_slot": {
+            "type": "string",
+            "description": "Time slot e.g. 09:00-10:00"
+        },
+        "is_available": {
+            "type": "boolean",
+            "description": "Whether this slot is available"
+        }
+    },
+    "required": [
+        "id",
+        "day_of_week",
+        "time_slot"
+    ]
+}

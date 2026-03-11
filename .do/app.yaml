@@ -1,0 +1,47 @@
+# DigitalOcean App Platform - LikeNew
+# 1. Repo configurado. Si usas otro, cambia github.repo
+# 2. Configura DATABASE_URL y VITE_API_BASE_URL en DigitalOcean (Settings > App-Level Environment Variables)
+#    - DATABASE_URL: desde Supabase (Connection Pooler, puerto 6543)
+#    - VITE_API_BASE_URL: URL del backend tras el primer deploy (ej: https://backend-xxx.ondigitalocean.app)
+
+name: likenew
+region: nyc
+features:
+  - buildpack-stack=ubuntu-22
+
+services:
+  - name: backend
+    source_dir: app/app/backend
+    github:
+      repo: Robertlin24/likenew
+      branch: main
+      deploy_on_push: true
+    environment_slug: python
+    build_command: pip install -r requirements.txt
+    run_command: uvicorn main:app --host 0.0.0.0 --port $PORT
+    http_port: 8080
+    instance_count: 1
+    envs:
+      - key: ENVIRONMENT
+        value: prod
+        scope: RUN_AND_BUILD_TIME
+        type: GENERAL
+      # DATABASE_URL debe añadirse como variable secreta en la consola de DigitalOcean
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 30
+      period_seconds: 10
+
+  - name: frontend
+    source_dir: app/app/frontend
+    github:
+      repo: Robertlin24/likenew
+      branch: main
+      deploy_on_push: true
+    environment_slug: node-js
+    build_command: npm install && npm run build
+    run_command: npm run preview -- --host 0.0.0.0 --port $PORT
+    http_port: 4173
+    instance_count: 1
+    # VITE_API_BASE_URL debe añadirse en la consola con la URL del backend
+    # Ejemplo: https://backend-xxxxx-xxx.ondigitalocean.app

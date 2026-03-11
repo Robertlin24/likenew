@@ -1,0 +1,22 @@
+{
+    "title": "days_off",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "date": {
+            "type": "string",
+            "description": "Date marked as off YYYY-MM-DD"
+        },
+        "reason": {
+            "type": "string",
+            "description": "Reason for day off"
+        }
+    },
+    "required": [
+        "id",
+        "date"
+    ]
+}

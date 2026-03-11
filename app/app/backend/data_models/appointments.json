@@ -1,0 +1,69 @@
+{
+    "title": "appointments",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Primary key, auto-increment"
+        },
+        "user_id": {
+            "type": "string",
+            "description": "User ID from auth"
+        },
+        "trash_can_count": {
+            "type": "integer",
+            "description": "Number of trash cans to clean (1, 2, or 3)"
+        },
+        "service_price": {
+            "type": "number",
+            "description": "Service price in dollars (25, 50, or 70)"
+        },
+        "address": {
+            "type": "string",
+            "description": "Customer address for service"
+        },
+        "phone": {
+            "type": "string",
+            "description": "Customer phone number"
+        },
+        "appointment_date": {
+            "type": "string",
+            "description": "Date of appointment YYYY-MM-DD"
+        },
+        "appointment_time": {
+            "type": "string",
+            "description": "Time slot for appointment e.g. 09:00-10:00"
+        },
+        "payment_status": {
+            "type": "string",
+            "description": "Payment status: pending, paid, confirmed"
+        },
+        "appointment_status": {
+            "type": "string",
+            "description": "Status: pending, confirmed, completed, cancelled"
+        },
+        "payment_proof_url": {
+            "type": "string",
+            "description": "URL or key of Zelle payment proof image"
+        },
+        "notes": {
+            "type": "string",
+            "description": "Additional notes"
+        },
+        "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+        }
+    },
+    "required": [
+        "id",
+        "user_id",
+        "trash_can_count",
+        "service_price",
+        "address",
+        "phone",
+        "appointment_date",
+        "appointment_time"
+    ]
+}
