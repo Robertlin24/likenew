@@ -195,6 +195,14 @@ def health_check():
     return {"status": "healthy"}
 
 
+@app.get("/api/config")
+def api_config():
+    """Configuración para el frontend (mismo dominio = URL vacía para rutas relativas)."""
+    # En App Platform con ingress, frontend y backend comparten dominio → "" para peticiones relativas
+    api_base = os.environ.get("APP_URL", "") or os.environ.get("VITE_API_BASE_URL", "")
+    return {"API_BASE_URL": api_base}
+
+
 def run_in_debug_mode(app: FastAPI):
     """Run the FastAPI app in debug mode with proper asyncio handling.
 
