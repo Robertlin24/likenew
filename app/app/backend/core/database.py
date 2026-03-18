@@ -4,6 +4,7 @@ import os
 import re
 import time
 from pathlib import Path
+import hashlib
 
 from asyncpg.exceptions import (
     DuplicateTableError,
@@ -41,6 +42,10 @@ class DatabaseManager:
         # Debug: qué recibe el backend (quitar cuando funcione en DO)
         _masked = re.sub(r":[^:@]+@", ":***@", raw_url) if raw_url else "(empty)"
         logger.info("DATABASE_URL len=%s preview=%s", len(raw_url or ""), (_masked or "")[:90])
+        if raw_url:
+            # Diagnóstico seguro: no imprime el secreto, solo un hash corto.
+            digest = hashlib.sha256(raw_url.encode("utf-8")).hexdigest()
+            logger.info("DATABASE_URL sha256_prefix=%s sslmode=%s", digest[:12], "sslmode=" in raw_url)
 
         try:
             url = make_url(raw_url)
