@@ -1,5 +1,7 @@
 # Despliegue LikeNew en DigitalOcean App Platform
 
+> **LikeNew usa PostgreSQL en DigitalOcean (Managed Database).** No hace falta Supabase. Resumen: [BASE_DE_DATOS.md](BASE_DE_DATOS.md).
+
 ## 1. Base de datos (recomendado: PostgreSQL en DigitalOcean)
 
 1. En [DigitalOcean](https://cloud.digitalocean.com/databases) crea un **Managed Database** → **PostgreSQL** (misma región que la App si puedes).
@@ -9,9 +11,7 @@
 5. Formato habitual: `postgresql://doadmin:[PASSWORD]@[HOST]:25060/defaultdb?sslmode=require`
 6. El backend usa `DATABASE_URL` y lo normaliza a `postgresql+asyncpg`.
 
-**Alternativa:** Si prefieres otro proveedor (Supabase, Neon, etc.), cualquier URL `postgresql://` válida sirve; añade `DATABASE_URL` como secreto en el componente backend igual que abajo.
-
-*(Guía Supabase por separado: [SUPABASE_SETUP.md](SUPABASE_SETUP.md).)*
+**Otro proveedor:** Cualquier PostgreSQL con URI `postgresql://` válida sirve; misma variable `DATABASE_URL` en el backend. Guía opcional solo si usas Supabase: [SUPABASE_SETUP.md](SUPABASE_SETUP.md).
 
 ## 2. DigitalOcean App Platform
 

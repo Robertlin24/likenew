@@ -10,11 +10,11 @@
 ## Variables de entorno configuradas
 
 ### Backend
-- [ ] `DATABASE_URL` – URL de Supabase (Connection Pooler, puerto 6543)
+- [ ] `DATABASE_URL` – URI PostgreSQL (en producción: **DigitalOcean Managed DB**, p. ej. puerto `25060`)
 - [ ] `ENVIRONMENT` = `prod`
 
 ### Frontend (build time)
-- [ ] `VITE_API_BASE_URL` – URL del backend (ej: `https://backend-xxxxx.ondigitalocean.app`)
+- [ ] Con **ingress** en `.do/app.yaml` suele **no** hacer falta `VITE_API_BASE_URL`. Solo si el front llama a otro dominio para la API.
 
 ## Checklist de verificación post-deploy
 

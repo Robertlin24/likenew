@@ -1,5 +1,7 @@
 # Instrucciones para Configurar en DigitalOcean
 
+LikeNew en producción usa **PostgreSQL en DigitalOcean** (`DATABASE_URL` del Managed Database). Ver [BASE_DE_DATOS.md](BASE_DE_DATOS.md).
+
 ## Opción 1: Usar archivo `.do/app.yaml` (RECOMENDADO)
 
 1. **Deja el campo "Source directories" VACÍO**

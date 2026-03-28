@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Script para verificar conexión a Supabase y mostrar información de configuración
+Verifica DATABASE_URL contra PostgreSQL (p. ej. DigitalOcean Managed DB).
+Nombre de archivo histórico; no implica que la app use Supabase.
 """
 
 import os
@@ -10,7 +11,7 @@ import asyncio
 
 def print_header():
     print("=" * 70)
-    print("VERIFICACION DE CONFIGURACION SUPABASE")
+    print("VERIFICACION DE DATABASE_URL (POSTGRESQL)")
     print("=" * 70)
     print()
 
@@ -43,7 +44,7 @@ def check_env_file():
     return None
 
 async def test_connection(database_url):
-    """Prueba la conexión a Supabase"""
+    """Prueba la conexión con la URI dada."""
     if not database_url:
         print("\n[ERROR] No hay DATABASE_URL para probar")
         return False
@@ -55,7 +56,7 @@ async def test_connection(database_url):
         print("   Instala con: pip install asyncpg")
         return False
     
-    print("\n[CONECTANDO] Probando conexión a Supabase...")
+    print("\n[CONECTANDO] Probando conexión a PostgreSQL...")
     
     try:
         # Extraer componentes de la URL
@@ -105,10 +106,8 @@ async def test_connection(database_url):
         return False
     except asyncpg.InvalidPasswordError:
         print("\n[ERROR] Contrasena incorrecta")
-        print("   Verifica la contrasena en Supabase:")
-        print("   1. Ve a supabase.com")
-        print("   2. Tu proyecto -> Project Settings -> Database")
-        print("   3. Verifica o resetea la contrasena")
+        print("   Verifica usuario/contraseña en DigitalOcean -> Databases -> Users,")
+        print("   o en el proveedor que corresponda a tu DATABASE_URL.")
         return False
     except Exception as e:
         print(f"\n[ERROR] Error al conectar: {type(e).__name__}")
@@ -123,12 +122,12 @@ def print_digitalocean_instructions():
     print()
     print("1. Ve a tu App en DigitalOcean")
     print("2. Click en pestaña 'Settings'")
-    print("3. Busca 'App-Level Environment Variables'")
+    print("3. Componente backend -> Environment Variables (o App-Level si aplica)")
     print("4. Click en 'Edit'")
     print("5. Agrega variable:")
     print()
     print("   Key: DATABASE_URL")
-    print("   Value: postgresql://postgres.TU_REF:TU_PASSWORD@HOST_POOLER:6543/postgres")
+    print("   Value: postgresql://doadmin:TU_PASSWORD@TU_HOST:25060/defaultdb?sslmode=require")
     print("   Scope: RUN_AND_BUILD_TIME (o al menos RUN_TIME)")
     print("   Type: SECRET (si hay opcion)")
     print()
@@ -150,7 +149,7 @@ def main():
             print("   El problema esta en DigitalOcean, no en las credenciales")
         else:
             print("\n[ADVERTENCIA] La conexion local falla")
-            print("   Verifica las credenciales en Supabase")
+            print("   Verifica DATABASE_URL en .env y en el panel de tu proveedor de Postgres")
     
     # Instrucciones para DigitalOcean
     print_digitalocean_instructions()

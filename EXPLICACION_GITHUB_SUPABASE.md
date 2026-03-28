@@ -1,6 +1,8 @@
-# 🔍 Explicación: GitHub vs Supabase
+# 🔍 Explicación: GitHub vs base de datos en la nube
 
-## Conceptos Clave
+> **LikeNew desplegado hoy usa PostgreSQL en DigitalOcean**, no Supabase. Lo que sigue es la idea general (GitHub = código; la base = otro servicio).
+
+## Conceptos clave
 
 ### GitHub = Almacén de Código
 - **Qué es**: Un repositorio donde guardas tu código fuente

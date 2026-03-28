@@ -1,4 +1,6 @@
-# Configuración de Supabase para LikeNew
+# Configuración opcional: Supabase como proveedor de Postgres
+
+> **LikeNew en producción está documentado con PostgreSQL en DigitalOcean** ([DEPLOY_DIGITALOCEAN.md](DEPLOY_DIGITALOCEAN.md)). Esta guía solo aplica si **tú** eliges Supabase en lugar de la base gestionada de DO.
 
 ## Paso 1: Crear proyecto en Supabase
 

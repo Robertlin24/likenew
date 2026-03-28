@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Script de verificación de conexión a Supabase
-Verifica que las credenciales de DATABASE_URL funcionen correctamente
+Comprueba que DATABASE_URL (PostgreSQL) funciona con asyncpg.
+Sirve para DigitalOcean Managed DB, Supabase u cualquier Postgres compatible.
+(Nombre histórico del archivo: test_supabase_connection.py)
 """
 
 import asyncio
@@ -21,9 +22,9 @@ backend_path = Path(__file__).parent / "app" / "app" / "backend"
 sys.path.insert(0, str(backend_path))
 
 async def test_connection():
-    """Prueba la conexión a Supabase"""
+    """Prueba la conexión usando DATABASE_URL."""
     print("=" * 60)
-    print("VERIFICACION DE CONEXION A SUPABASE")
+    print("VERIFICACION DE CONEXION POSTGRESQL (DATABASE_URL)")
     print("=" * 60)
     
     # Cargar variables de entorno desde .env
@@ -75,7 +76,7 @@ async def test_connection():
         return False
     
     # Intentar conexión
-    print("\n[CONECTANDO] Intentando conectar a Supabase...")
+    print("\n[CONECTANDO] Intentando conectar al servidor PostgreSQL...")
     try:
         # Extraer componentes de la URL
         if 'postgresql+asyncpg://' in async_url:
@@ -140,7 +141,7 @@ async def test_connection():
                     
     except asyncio.TimeoutError:
         print("\n[ERROR] Timeout al conectar (mas de 15 segundos)")
-        print("   Verifica tu conexion a internet y que Supabase este disponible")
+        print("   Verifica red, firewall (Trusted sources en DO) y que el host sea alcanzable")
         return False
     except asyncpg.InvalidPasswordError:
         print("\n[ERROR] Contrasena incorrecta")
@@ -148,7 +149,7 @@ async def test_connection():
         return False
     except asyncpg.InvalidCatalogNameError:
         print("\n[ERROR] Base de datos no encontrada")
-        print("   Verifica que el nombre de la base de datos sea 'postgres'")
+        print("   Verifica el nombre de la base en la URI (p. ej. defaultdb en DigitalOcean)")
         return False
     except Exception as e:
         print(f"\n[ERROR] Error al conectar: {type(e).__name__}")

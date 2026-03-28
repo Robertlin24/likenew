@@ -1,53 +1,25 @@
-# Verificación de Contraseña en Supabase
+# Verificar contraseña y URI de PostgreSQL (LikeNew)
 
-## El error persiste: "password authentication failed"
+LikeNew en producción usa **PostgreSQL en DigitalOcean** (`DATABASE_URL`). Si el error dice *password authentication failed*, la contraseña en la URI no es la del usuario de la base.
 
-Esto significa que la contraseña en `DATABASE_URL` no coincide con la contraseña real de tu proyecto Supabase.
+## DigitalOcean Managed Database (lo habitual)
 
-## Pasos para Verificar/Resetear la Contraseña
+1. **Databases** → tu cluster → **Users & Databases**.
+2. Usuario **`doadmin`** → **show** / reset de contraseña si no la tienes.
+3. **Overview** → **Connection details** → copia host, puerto, base y monta:
 
-### Opción 1: Verificar la Contraseña Actual
+   `postgresql://doadmin:CONTRASEÑA@HOST:25060/defaultdb?sslmode=require`
 
-1. Ve a [supabase.com](https://supabase.com)
-2. Inicia sesión
-3. Selecciona tu proyecto en Supabase
-4. Ve a **Project Settings** (icono de engranaje)
-5. Click en **Database** en el menú lateral
-6. Busca la sección **Database Password**
-7. Si puedes verla o la acabas de resetear, úsala en `DATABASE_URL`
-8. Si es diferente, esa es la contraseña correcta que debes usar
+4. Pega eso en **App Platform → backend → `DATABASE_URL`** y redespliega.
 
-### Opción 2: Resetear la Contraseña
+## Solo si tu base está en Supabase (opcional)
 
-Si no recuerdas la contraseña o quieres cambiarla:
+1. [supabase.com](https://supabase.com) → tu proyecto → **Settings → Database**.
+2. **Database password** o **Reset**; copia la URI de **Connection pooling** si usas pooler.
+3. Misma regla: una sola línea en `DATABASE_URL`.
 
-1. En **Project Settings** → **Database**
-2. Busca **Database Password**
-3. Click en **Reset Database Password** o **Change Password**
-4. Genera una nueva contraseña (guárdala bien)
-5. Actualiza `DATABASE_URL` en DigitalOcean con la nueva contraseña
+## Formato
 
-### Opción 3: Obtener la URL Completa desde Supabase
-
-1. En **Project Settings** → **Database**
-2. Ve a la sección **Connection string**
-3. Selecciona **URI** (no Session)
-4. Selecciona **Connection pooling** → **Transaction** (puerto 6543)
-5. Copia la URL completa que aparece
-6. Reemplaza `[YOUR-PASSWORD]` con tu contraseña real
-7. Usa esa URL completa en DigitalOcean
-
-## Formato Correcto
-
-La URL debe verse así:
-```
-postgresql://postgres.TU_REF:TU_CONTRASEÑA@HOST_POOLER:6543/postgres
-```
-
-## Después de Corregir
-
-1. Actualiza `DATABASE_URL` en DigitalOcean con la contraseña correcta
-2. Guarda los cambios
-3. Force Rebuild and Deploy
-4. Espera 2-3 minutos
-5. Verifica que el backend inicie correctamente
+- Sin comillas alrededor de toda la cadena.
+- Sin espacios al inicio o al final.
+- Contraseña con símbolos conflictivos → codificar en URL.

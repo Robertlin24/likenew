@@ -16,7 +16,7 @@ function Mask-Url([string]$url) {
   return ($url -replace ':[^:@/]+@', ':***@')
 }
 
-Write-Title "AUDITORIA DESPLIEGUE LIKE NEW (SUPABASE + DIGITALOCEAN)"
+Write-Title "AUDITORIA DESPLIEGUE LIKE NEW (POSTGRES / DIGITALOCEAN)"
 
 if (-not (Test-Path $BackendEnvPath)) {
   Write-Host "[ERROR] No existe el archivo: $BackendEnvPath" -ForegroundColor Red
