@@ -220,6 +220,18 @@ class DatabaseManager:
             if asyncpg_connect_args:
                 engine_kwargs["connect_args"] = {**engine_kwargs.get("connect_args", {}), **asyncpg_connect_args}
 
+            try:
+                _parsed = make_url(database_url)
+                if _parsed.host:
+                    logger.info(
+                        "DB connect target host=%s port=%s database=%s",
+                        _parsed.host,
+                        _parsed.port or "(default)",
+                        _parsed.database or "",
+                    )
+            except Exception:
+                pass
+
             self.engine = create_async_engine(database_url, **engine_kwargs)
             logger.info("Database engine created successfully")
 
