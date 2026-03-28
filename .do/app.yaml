@@ -1,8 +1,9 @@
 # DigitalOcean App Platform - LikeNew
-# 1. Repo configurado. Si usas otro, cambia github.repo
-# 2. Configura DATABASE_URL y VITE_API_BASE_URL en DigitalOcean (Settings > App-Level Environment Variables)
-#    - DATABASE_URL: desde Supabase (Connection Pooler, puerto 6543)
-#    - VITE_API_BASE_URL: URL del backend tras el primer deploy (ej: https://backend-xxx.ondigitalocean.app)
+# 1. Repo: ajusta github.repo / branch si no es Robertlin24/likenew main
+# 2. DATABASE_URL: base en DigitalOcean Managed PostgreSQL → copia la "Connection string" del cluster
+#    (Databases → tu DB → Connection details). Puerto suele ser 25060; añade ?sslmode=require si no viene en la URI.
+#    Ponla solo en el servicio "backend" como SECRET (Settings del componente → Environment), o vincula la DB a la app
+#    para que DO inyecte DATABASE_URL. Mismo dominio con ingress: no hace falta VITE_API_BASE_URL.
 
 name: likenew
 region: nyc

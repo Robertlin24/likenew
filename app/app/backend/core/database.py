@@ -20,6 +20,73 @@ from sqlalchemy.pool import NullPool
 logger = logging.getLogger(__name__)
 
 
+def _sanitize_raw_database_url(raw: str) -> str:
+    """Quita artefactos típicos al pegar DATABASE_URL (DO, .env, JSON) que rompen el parser de SQLAlchemy."""
+    if not raw:
+        return ""
+    s = raw.strip()
+    if len(s) >= 2 and s[0] == s[-1] and s[0] in ('"', "'"):
+        s = s[1:-1].strip()
+    s = s.lstrip("\ufeff")
+    s = re.sub(r"[\r\n]+", "", s)
+    if s.startswith("="):
+        s = s.lstrip("=").strip()
+
+    low = s.lower()
+    if low.startswith("jdbc:postgresql://"):
+        s = "postgresql://" + s[len("jdbc:postgresql://") :]
+    elif low.startswith("postgres://"):
+        s = "postgresql://" + s[len("postgres://") :]
+    elif "://" not in s and "@" in s:
+        # Copia parcial desde la consola DO: "doadmin:clave@host:25060/defaultdb?..."
+        if ".ondigitalocean.com" in low or re.search(r":(5432|25060|5433)/", s):
+            s = "postgresql://" + s
+
+    return s.strip()
+
+
+def _asyncpg_url_without_sslmode(url_str: str) -> tuple[str, dict]:
+    """asyncpg no acepta el argumento sslmode; SQLAlchemy lo reenvía y falla. Quitamos sslmode de la URL y usamos connect_args."""
+    connect_args: dict = {}
+    try:
+        u = make_url(url_str)
+    except Exception:
+        return url_str, connect_args
+
+    if "asyncpg" not in (u.drivername or ""):
+        return url_str, connect_args
+
+    q = dict(u.query)
+    sslmode = q.pop("sslmode", None)
+    if isinstance(sslmode, (list, tuple)):
+        sslmode = sslmode[0] if sslmode else None
+    sslmode_s = (str(sslmode).lower() if sslmode else "") or ""
+
+    ssl_q = q.pop("ssl", None)
+    if isinstance(ssl_q, (list, tuple)):
+        ssl_q = ssl_q[0] if ssl_q else None
+    ssl_q_s = (str(ssl_q).lower() if ssl_q else "") or ""
+
+    if sslmode_s in ("disable", "false", "0", "off"):
+        need_ssl = False
+    else:
+        need_ssl = sslmode_s in (
+            "require",
+            "verify-full",
+            "verify-ca",
+            "true",
+            "1",
+            "prefer",
+            "allow",
+        ) or ssl_q_s in ("require", "true", "1", "on")
+
+    if need_ssl:
+        connect_args["ssl"] = True
+
+    u2 = u.set(query=q)
+    return str(u2), connect_args
+
+
 class Base(DeclarativeBase):
     pass
 
@@ -39,19 +106,30 @@ class DatabaseManager:
         (e.g., sqlite:/// or postgresql://), which would otherwise load 'pysqlite' or
         other sync drivers and break async engine initialization.
         """
+        raw_url = _sanitize_raw_database_url(raw_url or "")
         # Debug: qué recibe el backend (quitar cuando funcione en DO)
         _masked = re.sub(r":[^:@]+@", ":***@", raw_url) if raw_url else "(empty)"
         logger.info("DATABASE_URL len=%s preview=%s", len(raw_url or ""), (_masked or "")[:90])
         if raw_url:
             # Diagnóstico seguro: no imprime el secreto, solo un hash corto.
             digest = hashlib.sha256(raw_url.encode("utf-8")).hexdigest()
-            logger.info("DATABASE_URL sha256_prefix=%s sslmode=%s", digest[:12], "sslmode=" in raw_url)
+            logger.info(
+                "DATABASE_URL sha256_prefix=%s sslmode=%s",
+                digest[:12],
+                ("sslmode=" in raw_url or "ssl=" in raw_url),
+            )
 
         try:
             url = make_url(raw_url)
         except Exception as e:
-            # If parsing fails, fall back to original; engine creation will raise with details
-            logger.error(f"Failed to parse database URL: {e}")
+            logger.error("Failed to parse database URL: %s", e)
+            logger.error(
+                "Comprueba DATABASE_URL: una sola línea, sin comillas. Válido: postgresql://..., "
+                "postgres://..., jdbc:postgresql://..., o solo doadmin:clave@host:25060/defaultdb "
+                "(se añade postgresql:// solo si detecta host DO o puerto 5432/25060). "
+                "Si la contraseña tiene @ : # ? %% / u otros símbolos, codifícala con "
+                "urllib.parse.quote(contraseña, safe='')."
+            )
             return raw_url
 
         drivername = url.drivername or ""
@@ -109,6 +187,7 @@ class DatabaseManager:
         try:
             logger.info("Normalizing database URL for async compatibility...")
             database_url = self._normalize_async_database_url(settings.database_url)
+            database_url, asyncpg_connect_args = _asyncpg_url_without_sslmode(database_url)
 
             logger.info("Creating async database engine...")
             # Configure engine based on environment (Lambda vs non-Lambda)
@@ -137,6 +216,9 @@ class DatabaseManager:
                 engine_kwargs["pool_recycle"] = 3600  # Connection recycle time (1 hour)
                 engine_kwargs["pool_timeout"] = 30  # Connection acquisition timeout (30 seconds)
                 logger.info("Using QueuePool with connection pooling for non-Lambda environment")
+
+            if asyncpg_connect_args:
+                engine_kwargs["connect_args"] = {**engine_kwargs.get("connect_args", {}), **asyncpg_connect_args}
 
             self.engine = create_async_engine(database_url, **engine_kwargs)
             logger.info("Database engine created successfully")

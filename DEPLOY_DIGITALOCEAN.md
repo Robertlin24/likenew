@@ -1,14 +1,17 @@
 # Despliegue LikeNew en DigitalOcean App Platform
 
-## 1. Base de datos (Supabase)
+## 1. Base de datos (recomendado: PostgreSQL en DigitalOcean)
 
-Ver guía detallada en **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)**.
+1. En [DigitalOcean](https://cloud.digitalocean.com/databases) crea un **Managed Database** → **PostgreSQL** (misma región que la App si puedes).
+2. Tras el aprovisionamiento, abre el cluster → **Connection details**.
+3. Copia la **Connection string** (modo **Public network** o **VPC** según cómo despliegues la App; la App Platform suele usar red pública o Peering según tu configuración).
+4. El usuario suele ser `doadmin`, el puerto típico **25060**, y la URL incluye `?sslmode=require`.
+5. Formato habitual: `postgresql://doadmin:[PASSWORD]@[HOST]:25060/defaultdb?sslmode=require`
+6. El backend usa `DATABASE_URL` y lo normaliza a `postgresql+asyncpg`.
 
-1. Ve a [supabase.com](https://supabase.com) y crea un proyecto.
-2. En **Project Settings > Database** obtén la cadena de conexión.
-3. Usa **Connection pooling** (Transaction, puerto 6543).
-4. Formato: `postgresql://postgres.[ref]:[PASSWORD]@aws-0-[region].pooler.supabase.com:6543/postgres`
-5. El backend usa `DATABASE_URL` y lo normaliza a `postgresql+asyncpg`.
+**Alternativa:** Si prefieres otro proveedor (Supabase, Neon, etc.), cualquier URL `postgresql://` válida sirve; añade `DATABASE_URL` como secreto en el componente backend igual que abajo.
+
+*(Guía Supabase por separado: [SUPABASE_SETUP.md](SUPABASE_SETUP.md).)*
 
 ## 2. DigitalOcean App Platform
 
@@ -38,7 +41,7 @@ Ver guía detallada en **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)**.
 ### Backend
 | Variable       | Valor                       | Tipo   |
 |----------------|-----------------------------|--------|
-| DATABASE_URL   | URL de Supabase (pooler)    | SECRET |
+| DATABASE_URL   | URL PostgreSQL (ej. DO Managed DB o pooler externo) | SECRET |
 | ENVIRONMENT    | prod                        | GENERAL |
 
 ### Frontend (build time)
