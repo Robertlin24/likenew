@@ -82,16 +82,20 @@ def _asyncpg_url_without_sslmode(url_str: str) -> tuple[str, dict]:
         ) or ssl_q_s in ("require", "true", "1", "on")
 
     if need_ssl:
-        # Managed DB de DigitalOcean: cadena TLS con CA que no siempre está en el bundle de Python;
-        # ssl=True verifica y falla con CERTIFICATE_VERIFY_FAILED. Cifrado TLS sin verificar CA.
-        host = (u.host or "").lower()
-        if host.endswith(".db.ondigitalocean.com"):
-            _ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-            _ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+        # Managed DB de DigitalOcean: la cadena TLS no valida contra el bundle por defecto de Python
+        # con ssl=True → CERTIFICATE_VERIFY_FAILED. Usar contexto explícito sin verificar CA (sigue cifrado).
+        host_l = (u.host or "").lower()
+        url_l = url_str.lower()
+        is_do_db = host_l.endswith(".db.ondigitalocean.com") or ".db.ondigitalocean.com" in url_l
+        if is_do_db:
+            _ctx = ssl.create_default_context()
             _ctx.check_hostname = False
             _ctx.verify_mode = ssl.CERT_NONE
             connect_args["ssl"] = _ctx
-            logger.info("asyncpg SSL: TLS a host DigitalOcean sin verificación de CA (evita self-signed chain)")
+            logger.info(
+                "asyncpg SSL: contexto sin verificar CA para DigitalOcean (host=%s)",
+                u.host or "(en URL)",
+            )
         else:
             connect_args["ssl"] = True
 
