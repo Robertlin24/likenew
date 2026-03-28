@@ -1,10 +1,11 @@
 import asyncio
+import hashlib
 import logging
 import os
 import re
+import ssl
 import time
 from pathlib import Path
-import hashlib
 
 from asyncpg.exceptions import (
     DuplicateTableError,
@@ -81,7 +82,18 @@ def _asyncpg_url_without_sslmode(url_str: str) -> tuple[str, dict]:
         ) or ssl_q_s in ("require", "true", "1", "on")
 
     if need_ssl:
-        connect_args["ssl"] = True
+        # Managed DB de DigitalOcean: cadena TLS con CA que no siempre está en el bundle de Python;
+        # ssl=True verifica y falla con CERTIFICATE_VERIFY_FAILED. Cifrado TLS sin verificar CA.
+        host = (u.host or "").lower()
+        if host.endswith(".db.ondigitalocean.com"):
+            _ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+            _ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+            _ctx.check_hostname = False
+            _ctx.verify_mode = ssl.CERT_NONE
+            connect_args["ssl"] = _ctx
+            logger.info("asyncpg SSL: TLS a host DigitalOcean sin verificación de CA (evita self-signed chain)")
+        else:
+            connect_args["ssl"] = True
 
     u2 = u.set(query=q)
     return str(u2), connect_args
