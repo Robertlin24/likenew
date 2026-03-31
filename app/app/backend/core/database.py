@@ -197,6 +197,10 @@ class DatabaseManager:
                 return
 
         # App Platform expone DATABASE_URL en os.environ; priorizarla sobre Settings por si Pydantic no hidrata el secreto igual.
+        if os.environ.get("DATABASE_URL"):
+            logger.info("DATABASE_URL: presente en os.environ (longitud %s)", len(os.environ["DATABASE_URL"].strip()))
+        else:
+            logger.warning("DATABASE_URL: no está en os.environ; se usará settings.database_url si existe.")
         raw_db_url = (os.environ.get("DATABASE_URL") or "").strip()
         if not raw_db_url:
             su = getattr(settings, "database_url", None)
