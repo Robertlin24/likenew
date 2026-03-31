@@ -196,13 +196,18 @@ class DatabaseManager:
                 logger.info("Database already initialized")
                 return
 
-        if not settings.database_url:
+        # App Platform expone DATABASE_URL en os.environ; priorizarla sobre Settings por si Pydantic no hidrata el secreto igual.
+        raw_db_url = (os.environ.get("DATABASE_URL") or "").strip()
+        if not raw_db_url:
+            su = getattr(settings, "database_url", None)
+            raw_db_url = (str(su).strip() if su else "")
+        if not raw_db_url:
             logger.error("No database URL provided. DATABASE_URL environment variable must be set.")
             raise ValueError("DATABASE_URL environment variable is required")
 
         try:
             logger.info("Normalizing database URL for async compatibility...")
-            database_url = self._normalize_async_database_url(settings.database_url)
+            database_url = self._normalize_async_database_url(raw_db_url)
             database_url, asyncpg_connect_args = _asyncpg_url_without_sslmode(database_url)
 
             logger.info("Creating async database engine...")
