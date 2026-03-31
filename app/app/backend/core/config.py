@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     host: str = "0.0.0.0"
     port: int = 8000
 
+    # PostgreSQL (App Platform / DigitalOcean: definir DATABASE_URL en el componente backend, no solo en app.yaml)
+    database_url: str | None = None
+
     # AWS Lambda Configuration
     is_lambda: bool = False
     lambda_function_name: str = "fastapi-backend"
